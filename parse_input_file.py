@@ -134,16 +134,21 @@ def get_line_info_from_file(file_to_read):
     for stop in get_single_children(site_frame, "stopPlaces"):
         id = stop.get("id")
         # if some stations are defined multiple times
-        if id not in stop_points or stops[id]["Name"]== "UNKNOWN":
-            global_id_kl =get_single_children(stop, "keyList",allow_none=True)
+        if id not in stop_points or stops[id]["Name"] == "UNKNOWN":
+            global_id_kl = get_single_children(stop, "keyList", allow_none=True)
             if global_id_kl is not None:
                 global_id_kv = get_single_children(global_id_kl, "KeyValue")
                 assert get_single_children(global_id_kv, "Key").text == "GlobalID"
                 global_id = get_single_children(global_id_kv, "Value").text
                 name = get_single_children(stop, "Name").text
-                loc = get_single_children(get_single_children(stop, "Centroid"), "Location")
-                lat = get_single_children(loc, "Latitude").text
-                lon = get_single_children(loc, "Longitude").text
+                centeroid = get_single_children(stop, "Centroid", allow_none=True)
+                if centeroid is not None:
+                    loc = get_single_children(centeroid, "Location")
+                    lat = get_single_children(loc, "Latitude").text
+                    lon = get_single_children(loc, "Longitude").text
+                else:
+                    lat = "0"
+                    lon = "0"
                 stops[id] = {"Name": name, "lat": lat, "lon": lon, "global_id": global_id}
             else:
                 stops[id] = {"Name": "UNKNOWN", "lat": "0", "lon": "0", "global_id": "UNKNOWN"}
