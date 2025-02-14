@@ -4,53 +4,9 @@ import pandas as pd
 from lxml import etree
 
 import datetime
-
-file_to_read="data/20250210_fahrplaene_gesamtdeutschland/126_HEAGTRAM/NX-PI-01_DE_NAP_LINE_126-HEAGTRAM-6_20250208.xml"
+from network import Network
 
 xml_namespace="{http://www.netex.org.uk/netex}"
-
-
-class stop:
-    def __init__(self, stop_id, stop_name, stop_lat, stop_lon):
-        self.stop_id = stop_id
-        self.stop_name = stop_name
-        self.stop_lat = stop_lat
-        self.stop_lon = stop_lon
-        self.connections =[]
-
-class Network:
-    def __init__(self):
-        self.stops = dict()
-        # for statistics
-        self.num_edges=0
-
-    def _add_stop(self,stop_id):
-        assert stop_id not in self.stops
-        self.stops[stop_id]= {}
-
-    def add_connection(self,stop_id_from,stop_id_to,depature,arrival,line,type):
-        self.num_edges += 1
-
-        if not stop_id_from in self.stops:
-            self._add_stop(stop_id_from)
-        if not stop_id_to in self.stops:
-            self._add_stop(stop_id_to)
-
-        if stop_id_to not in self.stops[stop_id_from]:
-            self.stops[stop_id_from][stop_id_to]=[]
-        self.stops[stop_id_from][stop_id_to].append((depature,arrival,line,type))
-
-
-
-
-
-
-
-
-
-
-
-
 
 # returns a network object
 def consolidate_data(line_data,stop_points,stops,journeys,trips):
@@ -199,9 +155,4 @@ def get_line_info_from_file(file_to_read):
 
 
 
-    return consolidate_data(line_data,stop_points,stops,journeys,trips)
-
-network = get_line_info_from_file(file_to_read)
-
-print(network.num_edges)
-print(network.stops["de:06411:4736"])
+    return consolidate_data(line_data,stop_points,stops,journeys,trips),stops
