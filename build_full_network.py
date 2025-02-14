@@ -1,3 +1,4 @@
+import datetime
 import os
 from time import strftime
 from tqdm import tqdm
@@ -69,7 +70,13 @@ print(len(network.stops[luisenplatz][schloss]))
 # for info in network.stops[luisenplatz][schloss]:
 #    print(info[0].strftime("%H:%M")+" "+info[2])
 
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.time):
+            return obj.strftime("%H:%M")  # Convert to string
+        return super().default(obj)
+
 with open('network.json', 'w') as f:
-    json.dump(network.stops, f)
+    json.dump(network.stops, f,cls=CustomJSONEncoder)
 with open('stations.json', 'w') as f:
     json.dump(all_stops, f)
