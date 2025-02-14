@@ -1,6 +1,5 @@
 # initial test how to read in the data
 
-import pandas as pd
 from lxml import etree
 
 import datetime
