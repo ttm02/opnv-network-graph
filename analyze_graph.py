@@ -1,9 +1,13 @@
-import datetime
 import json
 import difflib
-import pickle
+
+from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from network import Network
+import smopy
+
+
 
 network = Network()
 
@@ -32,18 +36,48 @@ with open('network.json', 'r') as f:
 with open('stations.json', 'r') as f:
     all_stops =json.load(f)
 
-print("Compute reachable stations")
+print("Compute reachable stations...")
 
+#TODO cmd line args
 luisenplatz = find_closest_key_by_name("Darmstadt Luisenplatz", all_stops)
 time_limit=30
 start_time= 9*60 #09:00
 
 reachable = network.get_reachable_stations_in_time(luisenplatz, start_time, time_limit)
-print(reachable)
-print(len(reachable))
+print("%i Stations are reachable" % len(reachable))
+print("Draw map")
 
+min_lat =180
+min_long=180
+max_lat=-180
+max_long=-180
+
+coordinates = []
 for station in reachable:
-    name = all_stops[station]['Name']
-    print (name)
+    if station in all_stops:
+        lat = float(all_stops[station]['lat'])
+        lon = float(all_stops[station]['lon'])
+        coordinates.append((lat, lon))
+
+        min_lat = min(min_lat, lat)
+        min_long = min(min_long, lon)
+        max_lat = max(max_lat, lat)
+        max_long = max(max_long, lon)
+
+# area to plot
+map_box = (min_lat,min_long,max_lat,max_long)
+#print(map_box)
+map = smopy.Map(map_box)
+
+# figsize is used for resolution
+ax = map.show_mpl(figsize=(24,24))
+#ax = map.show_mpl(figsize=(8,8))
+
+for lat,lon in coordinates:
+    x, y = map.to_pixels(lat, lon)
+    ax.plot(x, y, 'or', ms=10, mew=2)
+
+plt.show()
+#plt.savefig('map.pdf')
 
 
