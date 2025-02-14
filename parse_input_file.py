@@ -89,8 +89,6 @@ def get_line_info_from_file(file_to_read):
         id = stop.get("id")
         if id not in stop_points:
             name = get_single_children(stop,"Name").text
-            # re format only the part before |
-            name = name[:name.index("|")]
             stop_points[id] = name
 
     # link stop to places
