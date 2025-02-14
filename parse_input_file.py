@@ -54,6 +54,11 @@ def get_single_children_value_or_none(root, child_type):
 def get_frame_type(frame):
     return get_single_children(frame,"TypeOfFrameRef").get("ref")
 
+def stops_by_global_id(stops):
+    # Create a new dictionary with global_id as the key and remove global_id from values
+    return {v['global_id']: {k: v for k, v in v.items() if k != 'global_id'} for v in stops.values()}
+
+
 
 #TODO one could clean unused code
 
@@ -152,5 +157,7 @@ def get_line_info_from_file(file_to_read):
         trips[id] = (pattern,journey_stops)
 
 
-
-    return consolidate_data(line_data,stop_points,stops,journeys,trips),stops
+    network = consolidate_data(line_data,stop_points,stops,journeys,trips)
+    # re format stops to use global ID
+    stops = stops_by_global_id(stops)
+    return network,stops

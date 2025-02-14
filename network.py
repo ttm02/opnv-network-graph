@@ -33,7 +33,8 @@ class Network:
             for connecting_stop,timetable in connections.items():
                 if connecting_stop not in self.stops[stop_id]:
                     self.stops[stop_id][connecting_stop] = []
-                self.stops[stop_id][connecting_stop].append(timetable)
+                    # concat lists
+                self.stops[stop_id][connecting_stop]+=timetable
 
             # duplicates can be removed later
             # nevertheless there should not be any duplicated anyway
