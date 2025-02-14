@@ -11,7 +11,7 @@ xml_namespace = "{http://www.netex.org.uk/netex}"
 # Convert HH:MM to minutes since midnight
 def time_to_minutes(time_str):
     h, m, s = map(int, time_str.split(':'))
-    assert s == 0
+    # we dont care about the seconds, as not all data provider use them
     return h * 60 + m
 
 
