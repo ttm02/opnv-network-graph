@@ -11,7 +11,6 @@ class Network:
     def __init__(self):
         self.stops = dict()
 
-
     def _add_stop(self, stop_id):
         assert stop_id not in self.stops
         self.stops[stop_id] = {}
@@ -30,11 +29,11 @@ class Network:
         for stop_id, connections in other.stops.items():
             if stop_id not in self.stops:
                 self._add_stop(stop_id)
-            for connecting_stop,timetable in connections.items():
+            for connecting_stop, timetable in connections.items():
                 if connecting_stop not in self.stops[stop_id]:
                     self.stops[stop_id][connecting_stop] = []
                     # concat lists
-                self.stops[stop_id][connecting_stop]+=timetable
+                self.stops[stop_id][connecting_stop] += timetable
 
             # duplicates can be removed later
             # nevertheless there should not be any duplicated anyway
