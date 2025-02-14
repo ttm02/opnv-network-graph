@@ -8,6 +8,13 @@ from network import Network
 xml_namespace = "{http://www.netex.org.uk/netex}"
 
 
+# Convert HH:MM to minutes since midnight
+def time_to_minutes(time_str):
+    h, m, s = map(int, time_str.split(':'))
+    assert s == 0
+    return h * 60 + m
+
+
 # returns a network object
 def consolidate_data(line_data, stop_points, stops, journeys, trips):
     network = Network()
@@ -74,7 +81,7 @@ def stops_by_global_id(stops):
     return {v['global_id']: {k: v for k, v in v.items() if k != 'global_id'} for v in stops.values()}
 
 
-# TODO one could clean unused code
+# TODO one could clean unused code, where fields are importet that are not used later
 
 def get_line_info_from_file(file_to_read):
     line_data = dict()
@@ -179,10 +186,10 @@ def get_line_info_from_file(file_to_read):
             stop_ref = get_single_children(time_info, "StopPointInJourneyPatternRef").get("ref")
             arrival = get_single_children_value_or_none(time_info, "ArrivalTime")
             if arrival is not None:
-                arrival = datetime.time.fromisoformat(arrival)
+                arrival = time_to_minutes(arrival)
             depature = get_single_children_value_or_none(time_info, "DepartureTime")
             if depature is not None:
-                depature = datetime.time.fromisoformat(depature)
+                depature = time_to_minutes(depature)
             journey_stops.append((stop_ref, arrival, depature))
         trips[id] = (pattern, journey_stops)
 
