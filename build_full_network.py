@@ -52,10 +52,4 @@ with open('network.json', 'w') as f:
 with open('stations.json', 'w') as f:
     json.dump(all_stops, f)
 
-print("save as pickle")
-with open("network.pkl", "wb") as f:
-    pickle.dump(network.stops, f)
-with open("stations.pkl", "wb") as f:
-    pickle.dump(all_stops, f)
-
 print("done")
