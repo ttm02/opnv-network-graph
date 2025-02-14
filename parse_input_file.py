@@ -112,7 +112,13 @@ def get_line_info_from_file(file_to_read):
             stop_points[id] = name
 
     # link stop to places
-    for stop in get_single_children(service_frame, "stopAssignments"):
+    # check if liks are missing
+    stop_assignment = get_single_children(service_frame, "stopAssignments", allow_none=True)
+    if stop_assignment is None:
+        # could not read data
+        return Network(), dict()
+
+    for stop in stop_assignment:
         scheduled_stop_point = get_single_children(stop, "ScheduledStopPointRef").get("ref")
         stop_place = get_single_children(stop, "StopPlaceRef").get("ref")
         assert scheduled_stop_point in stop_points
