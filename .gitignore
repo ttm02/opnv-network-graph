@@ -4,6 +4,10 @@ venv
 
 #data
 data
+network.json
+stations.json
+network.pkl
+stations.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
