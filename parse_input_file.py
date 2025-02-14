@@ -21,19 +21,30 @@ class stop:
 class Network:
     def __init__(self):
         self.stops = dict()
+        # for statistics
         self.num_edges=0
 
-    def add_stop(self,stop_id):
+    def _add_stop(self,stop_id):
         assert stop_id not in self.stops
         self.stops[stop_id]= {}
 
     def add_connection(self,stop_id_from,stop_id_to,depature,arrival,line,type):
-        if not stop_id_from in self.stops:
-            self.add_stop(stop_id_from)
-        if not stop_id_to in self.stops:
-            self.add_stop(stop_id_to)
+        self.num_edges += 1
 
-        self.num_edges+=1
+        if not stop_id_from in self.stops:
+            self._add_stop(stop_id_from)
+        if not stop_id_to in self.stops:
+            self._add_stop(stop_id_to)
+
+        if stop_id_to not in self.stops[stop_id_from]:
+            self.stops[stop_id_from][stop_id_to]=[]
+        self.stops[stop_id_from][stop_id_to].append((depature,arrival,line,type))
+
+
+
+
+
+
 
 
 
@@ -193,3 +204,4 @@ def get_line_info_from_file(file_to_read):
 network = get_line_info_from_file(file_to_read)
 
 print(network.num_edges)
+print(network.stops["de:06411:4736"])
