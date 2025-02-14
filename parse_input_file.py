@@ -97,12 +97,15 @@ def get_line_info_from_file(file_to_read):
     assert get_frame_type(site_frame) =="epip:EU_PI_STOP"
     for stop in get_single_children(site_frame,"stopPlaces"):
         id = stop.get("id")
+        global_id_kv= get_single_children(get_single_children(stop,"keyList"),"KeyValue")
+        assert get_single_children(global_id_kv,"Key").text =="GlobalID"
+        global_id = get_single_children(global_id_kv,"Value").text =="GlobalID"
         name = get_single_children(stop,"Name").text
         loc = get_single_children(get_single_children(stop,"Centroid"),"Location")
         lat = get_single_children(loc,"Latitude").text
         lon = get_single_children(loc,"Longitude").text
         assert id not in stops
-        stops[id] = {"Name": name ,"lat":lat,"lon":lon}
+        stops[id] = {"Name": name ,"lat":lat,"lon":lon,"global_id":global_id}
 
     # parse timetable
     trips = dict()
