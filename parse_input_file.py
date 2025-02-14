@@ -28,13 +28,19 @@ def consolidate_data(line_data, stop_points, stops, journeys, trips):
             # get global id of stops
             assert journey_pattern[i][0] == stop_from
             stop_from = journey_pattern[i][1]
-            stop_from = stop_points[stop_from][0]
-            stop_from = stops[stop_from]["global_id"]
+            if not isinstance(stop_points[stop_from], list):
+                stop_from = "UNKNOWN"
+            else:
+                stop_from = stop_points[stop_from][0]
+                stop_from = stops[stop_from]["global_id"]
 
             assert journey_pattern[i + 1][0] == stop_to
             stop_to = journey_pattern[i + 1][1]
-            stop_to = stop_points[stop_to][0]
-            stop_to = stops[stop_to]["global_id"]
+            if not isinstance(stop_points[stop_to], list):
+                stop_to = "UNKNOWN"
+            else:
+                stop_to = stop_points[stop_to][0]
+                stop_to = stops[stop_to]["global_id"]
 
             network.add_connection(stop_from, stop_to, depature, arrival, line_data[line_id]["Name"],
                                    line_data[line_id]["type"])
@@ -153,6 +159,8 @@ def get_line_info_from_file(file_to_read):
             else:
                 stops[id] = {"Name": "UNKNOWN", "lat": "0", "lon": "0", "global_id": "UNKNOWN"}
 
+    # add a default stop
+    stops["UNKNOWN"] = {"Name": "UNKNOWN", "lat": "0", "lon": "0", "global_id": "UNKNOWN"}
     # parse timetable
     trips = dict()
     timetable_frame = get_single_children(frame, "TimetableFrame")
