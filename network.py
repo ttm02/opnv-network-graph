@@ -70,6 +70,5 @@ class LookupNetwork:
                     new_timetable = list(set(new_timetable))
                     new_timetable.sort()
                     self.stops[stop_id][connecting_stop] = new_timetable
-                    print(new_timetable)
         else:
             raise TypeError("Network must be of type Network")
