@@ -6,7 +6,7 @@ from network import Network
 
 file_to_read = "data/20250210_fahrplaene_gesamtdeutschland/126_HEAGTRAM/NX-PI-01_DE_NAP_LINE_126-HEAGTRAM-6_20250208.xml"
 dir_to_read = "data/20250210_fahrplaene_gesamtdeutschland/126_HEAGTRAM"
-# dir_to_read="data/20250210_fahrplaene_gesamtdeutschland"
+dir_to_read="data/20250210_fahrplaene_gesamtdeutschland"
 
 network = Network()
 all_stops = {}

@@ -42,10 +42,14 @@ def consolidate_data(line_data, stop_points, stops, journeys, trips):
     return network
 
 
-def get_single_children(root, child_type):
+def get_single_children(root, child_type, allow_none=False):
     chlds = [c for c in root.getchildren() if c.tag == xml_namespace + child_type]
-    assert len(chlds) == 1
-    return chlds[0]
+    if not allow_none and len(chlds) != 1:
+        raise ValueError("Parsing error in {}".format(root))
+    elif len(chlds) == 0:
+        return None
+    else:
+        return chlds[0]
 
 
 def get_single_children_value_or_none(root, child_type):
@@ -129,15 +133,20 @@ def get_line_info_from_file(file_to_read):
     assert get_frame_type(site_frame) == "epip:EU_PI_STOP"
     for stop in get_single_children(site_frame, "stopPlaces"):
         id = stop.get("id")
-        global_id_kv = get_single_children(get_single_children(stop, "keyList"), "KeyValue")
-        assert get_single_children(global_id_kv, "Key").text == "GlobalID"
-        global_id = get_single_children(global_id_kv, "Value").text
-        name = get_single_children(stop, "Name").text
-        loc = get_single_children(get_single_children(stop, "Centroid"), "Location")
-        lat = get_single_children(loc, "Latitude").text
-        lon = get_single_children(loc, "Longitude").text
-        assert id not in stops
-        stops[id] = {"Name": name, "lat": lat, "lon": lon, "global_id": global_id}
+        # if some stations are defined multiple times
+        if id not in stop_points or stops[id]["Name"]== "UNKNOWN":
+            global_id_kl =get_single_children(stop, "keyList",allow_none=True)
+            if global_id_kl is not None:
+                global_id_kv = get_single_children(global_id_kl, "KeyValue")
+                assert get_single_children(global_id_kv, "Key").text == "GlobalID"
+                global_id = get_single_children(global_id_kv, "Value").text
+                name = get_single_children(stop, "Name").text
+                loc = get_single_children(get_single_children(stop, "Centroid"), "Location")
+                lat = get_single_children(loc, "Latitude").text
+                lon = get_single_children(loc, "Longitude").text
+                stops[id] = {"Name": name, "lat": lat, "lon": lon, "global_id": global_id}
+            else:
+                stops[id] = {"Name": "UNKNOWN", "lat": "0", "lon": "0", "global_id": "UNKNOWN"}
 
     # parse timetable
     trips = dict()
