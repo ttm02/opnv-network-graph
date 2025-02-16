@@ -36,14 +36,15 @@ with open('network.json', 'r') as f:
 with open('stations.json', 'r') as f:
     all_stops =json.load(f)
 
-print("Compute reachable stations...")
-
 #TODO cmd line args
-luisenplatz = find_closest_key_by_name("Darmstadt Luisenplatz", all_stops)
+start_station = find_closest_key_by_name("Frankfurt Hauptbahnhof", all_stops)
 time_limit=30
 start_time= 9*60 #09:00
 
-reachable = network.get_reachable_stations_in_time(luisenplatz, start_time, time_limit)
+
+print("Compute reachable stations from %s..." % all_stops[start_station]["Name"])
+
+reachable = network.get_reachable_stations_in_time(start_station, start_time, time_limit)
 print("%i Stations are reachable" % len(reachable))
 print("Draw map")
 
@@ -78,6 +79,6 @@ for lat,lon in coordinates:
     ax.plot(x, y, 'or', ms=10, mew=2)
 
 plt.show()
-#plt.savefig('map.pdf')
+plt.savefig('map.pdf')
 
 

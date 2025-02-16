@@ -21,6 +21,7 @@ class Network:
         for stop,connections in stops.items():
             for connection,timetable in connections.items():
                 timetable.sort()
+        self.remove_unknown()
 
     def _add_stop(self, stop_id):
         assert stop_id not in self.stops
