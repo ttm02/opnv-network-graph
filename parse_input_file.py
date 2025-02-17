@@ -76,12 +76,7 @@ def get_frame_type(frame):
     return get_single_children(frame, "TypeOfFrameRef").get("ref")
 
 
-def stops_by_global_id(stops):
-    # Create a new dictionary with global_id as the key and remove global_id from values
-    return {v['global_id']: {k: v for k, v in v.items() if k != 'global_id'} for v in stops.values()}
-
-
-# TODO one could clean unused code, where fields are importet that are not used later
+# TODO one could clean unused code, where fields are imported that are not used later
 
 def get_line_info_from_file(file_to_read):
     line_data = dict()
@@ -122,7 +117,7 @@ def get_line_info_from_file(file_to_read):
     stop_assignment = get_single_children(service_frame, "stopAssignments", allow_none=True)
     if stop_assignment is None:
         # could not read data
-        return Network(), dict()
+        return Network()
 
     for stop in stop_assignment:
         scheduled_stop_point = get_single_children(stop, "ScheduledStopPointRef").get("ref")
@@ -194,6 +189,4 @@ def get_line_info_from_file(file_to_read):
         trips[id] = (pattern, journey_stops)
 
     network = consolidate_data(line_data, stop_points, stops, journeys, trips)
-    # re format stops to use global ID
-    stops = stops_by_global_id(stops)
-    return network, stops
+    return network

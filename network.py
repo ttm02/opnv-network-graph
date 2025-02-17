@@ -21,7 +21,6 @@ class Network:
         for stop, connections in stops.items():
             for connection, timetable in connections.items():
                 timetable.sort()
-        self.remove_unknown()
 
     def get_stops(self):
         return list(self.stops.keys())
@@ -60,9 +59,6 @@ class Network:
             # duplicates can be removed later
             # nevertheless there should not be any duplicated anyway
             # self.stops[stop_id]=list(set( self.stops[stop_id]))
-
-    def remove_unknown(self):
-        self.remove_stop("UNKNOWN")
 
     def get_reachable_stations_in_time(self, start_point, start_time, time_limit):
         end_time = start_time + time_limit
