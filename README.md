@@ -1,3 +1,5 @@
 # opnv-network-graph
-German Public Transit network graph
-work in progress
+
+compute all stations reachable from a given one in the allowed timeframe
+
+TODO add proper usage instructions
