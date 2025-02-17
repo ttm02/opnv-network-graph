@@ -34,6 +34,11 @@ def time_to_minutes(time_str):
     return h * 60 + m
 
 
+# Convert minutes back to HH:MM
+def minutes_to_time(minutes):
+    return f"{minutes // 60:02}:{minutes % 60:02}"
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--network_file', default='network.json', required=False)
@@ -42,6 +47,7 @@ def parse_arguments():
     parser.add_argument('--time_limit', default=30, type=int, help='time limit in minutes', required=False)
     parser.add_argument('--start_time', default='09:00', type=str, help='start time in HH:MM', required=False)
     parser.add_argument('--station', default='Frankfurt Hauptbahnhof', type=str, required=False)
+    parser.add_argument('--output', default='map.png', required=False)
 
     return parser.parse_args()
 
@@ -103,14 +109,25 @@ def main():
 
     # figsize is used for resolution
     ax = map.show_mpl(figsize=(24, 24))
-    # ax = map.show_mpl(figsize=(8,8))
+
+    ax.annotate(
+        "Reachable from %s (%s) until %s (%i stops)" % (
+            stops_data.loc[start_station, "Name"],
+            minutes_to_time(start_time),
+            minutes_to_time(start_time + time_limit),
+            len(reachable)),
+        xy=(0.5, 1.02),  # Position relative to axes (centered above the map)
+        xycoords="axes fraction",
+        fontsize=24,
+        ha="center",  # Center horizontally
+        va="bottom",  # Position below the top edge
+    )
 
     for lat, lon in coordinates:
         x, y = map.to_pixels(lat, lon)
         ax.plot(x, y, 'or', ms=10, mew=2)
 
-    plt.show()
-    plt.savefig('map.pdf')
+    plt.savefig(args.output)
 
 
 if __name__ == '__main__':
