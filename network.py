@@ -23,6 +23,14 @@ class Network:
                 timetable.sort()
         self.remove_unknown()
 
+    def get_stops(self):
+        return list(self.stops.keys())
+
+    def remove_stop(self,to_remove_stop_id):
+        for stop_id, connections in self.stops.items():
+            connections.pop(to_remove_stop_id, None)
+        self.stops.pop(to_remove_stop_id, None)
+
     def _add_stop(self, stop_id):
         assert stop_id not in self.stops
         self.stops[stop_id] = {}
@@ -54,33 +62,38 @@ class Network:
             # self.stops[stop_id]=list(set( self.stops[stop_id]))
 
     def remove_unknown(self):
-        for stop_id, connections in self.stops.items():
-            connections.pop("UNKNOWN", None)
-        self.stops.pop("UNKNOWN", None)
+        self.remove_stop("UNKNOWN")
 
 
     def get_reachable_stations_in_time(self,start_point,start_time,time_limit):
         end_time = start_time + time_limit
+        if end_time > 24*60:
+            raise ValueError("Time limit exceeds midnight")
         #(time,node)
         reachable_stations = [start_point]
         to_visit = [(start_time,start_point)]
         while len(to_visit) > 0:
-            to_visit.sort()# make sure we remove teh item with lowest travel time
+            to_visit.sort()# make sure we remove the item with the lowest travel time
             cur_time,visiting= to_visit.pop()
             for stop_id,timetable in self.stops[visiting].items():
                 idx = 0
                 #TODO use binary search?
                 while idx < len(timetable) and timetable[idx][0] < cur_time:
                     idx += 1
-                # found the next departure
-                if idx < len(timetable):
+                # found the next departure check if it is still in bounds
+                if idx < len(timetable) and timetable[idx][0] < end_time:
                     earliest_arrival = timetable[idx][1]
                     cur_dep_time = timetable[idx][0]
+                    # no day wrap around (e.g. a night train)
+                    if earliest_arrival < cur_dep_time:
+                        earliest_arrival = 24*60 +1 # sometime AFTER midnight (will be ruled out if no faste connection due to time limit)
                     idx += 1
                     while cur_dep_time < earliest_arrival and idx < len(timetable):
                         # is there a later connection that runs faster (unlikely but possible)
-                        earliest_arrival = min(earliest_arrival,timetable[idx][1])
-                        cur_dep_time = timetable[idx][0]
+                        # no day wrap around (e.g. night trains)
+                        if timetable[idx][1] > cur_dep_time:
+                            earliest_arrival = min(earliest_arrival,timetable[idx][1])
+                            cur_dep_time = timetable[idx][0]
                         idx += 1
                     # found the earliest arrival
                     if earliest_arrival <= end_time:
