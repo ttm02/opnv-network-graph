@@ -110,6 +110,7 @@ def main():
     # figsize is used for resolution
     ax = map.show_mpl(figsize=(24, 24))
 
+    # TODO annotation is not working correctly
     ax.annotate(
         "Reachable from %s (%s) until %s (%i stops)" % (
             stops_data.loc[start_station, "Name"],
