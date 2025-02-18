@@ -42,8 +42,7 @@ def minutes_to_time(minutes):
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--network_file', default='network.json', required=False)
-    parser.add_argument('--stations_file', default='data/20250210_zHV_gesamt/zHV_aktuell_csv.2025-02-10.csv',
-                        required=False)
+    parser.add_argument('--stations_file', default='stops.csv', required=False)
     parser.add_argument('--time_limit', default=30, type=int, help='time limit in minutes', required=False)
     parser.add_argument('--start_time', default='09:00', type=str, help='start time in HH:MM', required=False)
     parser.add_argument('--station', default='Frankfurt Hauptbahnhof', type=str, required=False)
@@ -60,21 +59,8 @@ def main():
     with open(args.network_file, 'r') as f:
         network.set_stops(json.load(f))
     print("Read Station Positions")
-    stops_data = pd.read_csv(args.stations_file,
-                             delimiter=';', index_col="DHID",
-                             usecols=["DHID", "Name", "Latitude", "Longitude"],
-                             dtype={"DHID": str, "Name": str, "Latitude": float, "Longitude": float},
-                             decimal=","
-                             )
+    stops_data = pd.read_csv(args.stations_file, index_col="DHID")
     stops_data.dropna(inplace=True)
-    print("Cross-Reference Data")
-    # only keep relevant ones
-    stops_data = stops_data.loc[stops_data.index.isin(network.get_stops())]
-    # and remove unknown stops
-    valid_stops = set(stops_data.index)
-    stops_to_remove = [stop for stop in network.get_stops() if stop not in valid_stops]
-    for stop in tqdm(stops_to_remove):
-        network.remove_stop(stop)
 
     start_station = find_closest_station_id_by_name(args.station, stops_data)
     time_limit = args.time_limit
