@@ -5,7 +5,7 @@ import difflib
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import pandas as pd
-from network import Network
+from LazyNetwork import Network
 import smopy
 
 
@@ -54,10 +54,7 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    network = Network()
-    print("Read Network data (Timetables)")
-    with open(args.network_file, 'r') as f:
-        network.set_stops(json.load(f))
+    network = Network(args.network_file)
     print("Read Station Positions")
     stops_data = pd.read_csv(args.stations_file, index_col="DHID")
     stops_data.dropna(inplace=True)
