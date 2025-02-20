@@ -41,7 +41,7 @@ def minutes_to_time(minutes):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--network_file', default='network.json', required=False)
+    parser.add_argument('--network_file', default='network.db', required=False)
     parser.add_argument('--stations_file', default='stops.csv', required=False)
     parser.add_argument('--time_limit', default=30, type=int, help='time limit in minutes', required=False)
     parser.add_argument('--start_time', default='09:00', type=str, help='start time in HH:MM', required=False)
@@ -55,9 +55,10 @@ def main():
     args = parse_arguments()
 
     network = Network()
-    print("Read Network data (Timetables)")
-    with open(args.network_file, 'r') as f:
-        network.set_stops(json.load(f))
+    # print("Read Network data (Timetables)")
+    # with open(args.network_file, 'r') as f:
+    #    network.set_stops(json.load(f))
+    network.set_stops(args.network_file)
     print("Read Station Positions")
     stops_data = pd.read_csv(args.stations_file, index_col="DHID")
     stops_data.dropna(inplace=True)

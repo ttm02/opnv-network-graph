@@ -1,3 +1,4 @@
+import shelve
 from bisect import bisect_left
 
 
@@ -15,12 +16,8 @@ class Network:
         self.stops = dict()
         # needed for building
 
-    def set_stops(self, stops):
-        assert len(self.stops) == 0
-        self.stops = stops
-        for stop, connections in stops.items():
-            for connection, timetable in connections.items():
-                timetable.sort()
+    def set_stops(self, stops_file):
+        self.stops = shelve.open(stops_file)
 
     def get_stops(self):
         return list(self.stops.keys())
@@ -71,6 +68,7 @@ class Network:
             to_visit.sort()  # make sure we remove the item with the lowest travel time
             cur_time, visiting = to_visit.pop()
             for stop_id, timetable in self.stops[visiting].items():
+                timetable.sort()
                 idx = 0
                 # TODO use binary search?
                 while idx < len(timetable) and timetable[idx][0] < cur_time:
@@ -81,7 +79,7 @@ class Network:
                     cur_dep_time = timetable[idx][0]
                     # no day wrap around (e.g. a night train)
                     if earliest_arrival < cur_dep_time:
-                        earliest_arrival = 24 * 60 + 1  # sometime AFTER midnight (will be ruled out if no faste connection due to time limit)
+                        earliest_arrival = 24 * 60 + 1  # sometime AFTER midnight (will be ruled out if no faster connection due to time limit)
                     idx += 1
                     while cur_dep_time < earliest_arrival and idx < len(timetable):
                         # is there a later connection that runs faster (unlikely but possible)

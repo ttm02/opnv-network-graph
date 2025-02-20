@@ -6,6 +6,8 @@ import zipfile
 import pandas as pd
 from tqdm import tqdm
 
+import shelve
+
 from parse_input_file import get_line_info_from_file
 from network import Network
 import pickle
@@ -13,9 +15,10 @@ import json
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 file_to_read = "data/20250210_fahrplaene_gesamtdeutschland.zip"
-use_parallel_processing=True
+use_parallel_processing = True
 # 4 batches per worker, as the files have different sizes (mostly depending on frequency of the respective service)
-batches_per_worker=4
+batches_per_worker = 4
+
 
 def process_xml_batch(xml_files):
     local_network = Network()
@@ -72,9 +75,11 @@ stops_to_remove = [stop for stop in network.get_stops() if stop not in valid_sto
 for stop in tqdm(stops_to_remove):
     network.remove_stop(stop)
 
-print("Write Result to Json file...")
-with open('network.json', 'w') as f:
-    json.dump(network.stops, f)
+with shelve.open('network.db') as db:
+    for key, value in network.stops.items():
+        db[key] = value
+# with open('network.json', 'w') as f:
+#    json.dump(network.stops, f)
 
 # and the stops
 stops_data.to_csv("stops.csv")
