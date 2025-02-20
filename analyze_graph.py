@@ -63,6 +63,7 @@ def main():
     stops_data = pd.read_csv(args.stations_file, index_col="DHID")
     stops_data.dropna(inplace=True)
 
+    print("Find Start station")
     start_station = find_closest_station_id_by_name(args.station, stops_data)
     time_limit = args.time_limit
     start_time = time_to_minutes(args.start_time)
