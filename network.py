@@ -84,7 +84,7 @@ class Network:
                     while cur_dep_time < earliest_arrival and idx < len(timetable):
                         # is there a later connection that runs faster (unlikely but possible)
                         # no day wrap around (e.g. night trains)
-                        if timetable[idx][1] > cur_dep_time:
+                        if timetable[idx][1] >= cur_dep_time:
                             earliest_arrival = min(earliest_arrival, timetable[idx][1])
                             cur_dep_time = timetable[idx][0]
                         idx += 1
