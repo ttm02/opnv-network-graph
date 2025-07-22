@@ -12,7 +12,7 @@ analyze_graph.py analyzes teh resulting database, see --help for usage instructi
 * function give me all/possible connections from A to B weighted waiting times after little wait vs fastest connection, few changes
 * remove duplication of visualization with city A and city B
 * Visualize routes
-* Visualize intersections
+* Visualize intersections (e.g. important network nodes)
 * Frequency of departures
 * Visualize where vehicles tend to spend the most time waiting.
 * Show how the 30-minute reachable area from a stop changes across the day (e.g. 7am vs 2pm vs 9pm).
