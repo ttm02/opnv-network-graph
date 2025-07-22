@@ -11,6 +11,9 @@ class stop:
         self.connections = []
 
 
+#TODO documentation
+#TODO the network has no accessible arrival data e.g. searching for the arrivals of a stop is difficult
+
 class Network:
     def __init__(self):
         self.stops = dict()
@@ -30,6 +33,10 @@ class Network:
     def _add_stop(self, stop_id):
         assert stop_id not in self.stops
         self.stops[stop_id] = {}
+
+    #returns a dict key = connected stop values= list of connections each as a tuple: (depature, arrival (at next stop), line number, transport type)
+    def get_connections(self, stop_id):
+        return  self.stops[stop_id]
 
     def add_connection(self, stop_id_from, stop_id_to, depature, arrival, line, type):
         if not stop_id_from in self.stops:

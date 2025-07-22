@@ -15,6 +15,7 @@ analyze_graph.py analyzes teh resulting database, see --help for usage instructi
 * Visualize intersections (e.g. important network nodes)
 * Frequency of departures
 * Visualize where vehicles tend to spend the most time waiting.
+* Frequency or wait time for a specific station over the course of a day
 * Show how the 30-minute reachable area from a stop changes across the day (e.g. 7am vs 2pm vs 9pm).
 * At what point is the area no longer accessible in the evening
 * Density of stops
