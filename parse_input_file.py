@@ -2,10 +2,12 @@
 
 from lxml import etree
 
-import datetime
+from datetime import datetime
 from network import Network
 
 xml_namespace = "{http://www.netex.org.uk/netex}"
+
+date_format = "%Y-%m-%dT00:00:00"
 
 
 # Convert HH:MM to minutes since midnight
@@ -78,7 +80,7 @@ def get_frame_type(frame):
 
 # TODO one could clean unused code, where fields are imported that are not used later
 
-def get_line_info_from_file(file_to_read):
+def get_line_info_from_file(file_to_read, date_to_use):
     line_data = dict()
     # multiple stop_points can refer to the same stop (e.g. multiple platforms)
     stop_points = dict()
@@ -168,25 +170,57 @@ def get_line_info_from_file(file_to_read):
 
     # add a default stop
     stops["UNKNOWN"] = {"Name": "UNKNOWN", "lat": "0", "lon": "0", "global_id": "UNKNOWN"}
+
+    # read in <dayTypes> from ServiceCalendarFrame
+    day_types = dict()
+    operating_periods = dict()
+    service_calendar_frame = get_single_children(frame, "ServiceCalendarFrame")
+    assert get_frame_type(service_calendar_frame) == "epip:EU_PI_CALENDAR"
+    ## UicOperatingPeriod are the dates
+    # DayTypeAssignment are the assignment of operatingeriods to day Types
+    calendar = get_single_children(service_calendar_frame, "ServiceCalendar")
+    for period in get_single_children(calendar, "operatingPeriods"):
+        id = period.get("id")
+        from_date = datetime.strptime(get_single_children_value_or_none(period, "FromDate"), date_format).date()
+        to_date = datetime.strptime(get_single_children_value_or_none(period, "ToDate"), date_format).date()
+        valid_day_bits = get_single_children_value_or_none(period, "ValidDayBits")
+        assert len(valid_day_bits) == (to_date - from_date).days + 1  # +1 as date range is inclusive
+        valid_day = 0
+        if from_date <= date_to_use <= to_date:
+            valid_day = int(valid_day_bits[(date_to_use - from_date).days])
+        operating_periods[id] = valid_day
+    for assignment in get_single_children(calendar, "dayTypeAssignments"):
+        op_period = get_single_children(assignment, "OperatingPeriodRef").get("ref")
+        day_type = get_single_children(assignment, "DayTypeRef").get("ref")
+        assert op_period is not None and day_type is not None
+        day_types[day_type] = operating_periods[op_period]
+
     # parse timetable
     trips = dict()
     timetable_frame = get_single_children(frame, "TimetableFrame")
     assert get_frame_type(timetable_frame) == "epip:EU_PI_TIMETABLE"
+    # < dayTypes >
     for journey in get_single_children(timetable_frame, "vehicleJourneys"):
         id = journey.get("id")
+        valid_for_date = False
         pattern = get_single_children(journey, "ServiceJourneyPatternRef").get("ref")
+        for day_type_node in get_single_children(journey, "dayTypes"):
+            if day_types[day_type_node.get("ref")]:
+                valid_for_date = True
         assert pattern in journeys
-        journey_stops = []
-        for time_info in get_single_children(journey, "passingTimes"):
-            stop_ref = get_single_children(time_info, "StopPointInJourneyPatternRef").get("ref")
-            arrival = get_single_children_value_or_none(time_info, "ArrivalTime")
-            if arrival is not None:
-                arrival = time_to_minutes(arrival)
-            depature = get_single_children_value_or_none(time_info, "DepartureTime")
-            if depature is not None:
-                depature = time_to_minutes(depature)
-            journey_stops.append((stop_ref, arrival, depature))
-        trips[id] = (pattern, journey_stops)
+
+        if valid_for_date:
+            journey_stops = []
+            for time_info in get_single_children(journey, "passingTimes"):
+                stop_ref = get_single_children(time_info, "StopPointInJourneyPatternRef").get("ref")
+                arrival = get_single_children_value_or_none(time_info, "ArrivalTime")
+                if arrival is not None:
+                    arrival = time_to_minutes(arrival)
+                depature = get_single_children_value_or_none(time_info, "DepartureTime")
+                if depature is not None:
+                    depature = time_to_minutes(depature)
+                journey_stops.append((stop_ref, arrival, depature))
+            trips[id] = (pattern, journey_stops)
 
     network = consolidate_data(line_data, stop_points, stops, journeys, trips)
     return network

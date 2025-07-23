@@ -2,6 +2,7 @@ import datetime
 import os
 from time import strftime
 import zipfile
+from datetime import datetime
 
 import pandas as pd
 from tqdm import tqdm
@@ -14,17 +15,20 @@ import pickle
 import json
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-file_to_read = "data/20250210_fahrplaene_gesamtdeutschland.zip"
+file_to_read = "data/20250721_fahrplaene_gesamtdeutschland.zip"
 use_parallel_processing = True
 # 4 batches per worker, as the files have different sizes (mostly depending on frequency of the respective service)
 batches_per_worker = 4
+
+date_to_use =datetime.strptime("2025-10-22", "%Y-%m-%d").date() # a Wednesday outside of Holidays
+
 
 
 def process_xml_batch(xml_files):
     local_network = Network()
     with zipfile.ZipFile(file_to_read, 'r') as zip_file:
         for xml_file in xml_files:
-            local_network.merge(get_line_info_from_file(zip_file.open(xml_file)))
+            local_network.merge(get_line_info_from_file(zip_file.open(xml_file),date_to_use))
     return local_network
 
 
@@ -59,7 +63,7 @@ with zipfile.ZipFile(file_to_read, 'r') as zip_file:
 # results = list(tqdm(executor.map(lambda xml_file: get_line_info_from_file(zip_file.open(xml_file)), xml_files), total=len(xml_files)))
 
 print("Read Station Positions")
-stops_data = pd.read_csv("data/20250210_zHV_gesamt/zHV_aktuell_csv.2025-02-10.csv",
+stops_data = pd.read_csv("data/20250721_zHV_gesamt/zHV_aktuell_csv.2025-07-21.csv",
                          delimiter=';', index_col="DHID",
                          usecols=["DHID", "Name", "Latitude", "Longitude"],
                          dtype={"DHID": str, "Name": str, "Latitude": float, "Longitude": float},
