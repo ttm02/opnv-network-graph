@@ -6,6 +6,8 @@ build_full_network.py : reads in the Data in NeTEx (Network Timetable Exchange) 
 
 analyze_graph.py analyzes teh resulting database, see --help for usage instructions
 
+# data source for timetable data:
+https://www.opendata-oepnv.de/ht/de/organisation/delfi/startseite?tx_vrrkit_view%5Baction%5D=details&tx_vrrkit_view%5Bcontroller%5D=View&tx_vrrkit_view%5Bdataset_name%5D=deutschlandweite-sollfahrplandaten&cHash=b9c9f5a01f93b45c83381b244ddf0606
 
 ## Other Ideas for visualization
 
