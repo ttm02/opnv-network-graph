@@ -3,15 +3,6 @@ from bisect import bisect_left
 from heapq import heappush, heappop
 
 
-class stop:
-    def __init__(self, stop_id, stop_name, stop_lat, stop_lon):
-        self.stop_id = stop_id
-        self.stop_name = stop_name
-        self.stop_lat = stop_lat
-        self.stop_lon = stop_lon
-        self.connections = []
-
-
 # TODO documentation
 # TODO the network has no accessible arrival data e.g. searching for the arrivals of a stop is difficult
 
@@ -95,7 +86,7 @@ class Network:
                 # python does not offer an update priority implementation
             visited.add(visiting)
             for stop_id, timetable in self.stops[visiting].items():
-                timetable.sort()
+                timetable.sort() # sort by departure
                 idx = 0
                 # TODO use binary search?
                 while idx < len(timetable) and timetable[idx][0] < cur_time:
