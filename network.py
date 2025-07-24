@@ -2,7 +2,6 @@ import shelve
 from bisect import bisect_left
 from heapq import heappush, heappop
 
-
 # TODO documentation
 # TODO the network has no accessible arrival data e.g. searching for the arrivals of a stop is difficult
 
@@ -59,14 +58,14 @@ class Network:
             # nevertheless there should not be any duplicated anyway
             # self.stops[stop_id]=list(set( self.stops[stop_id]))
 
-    def get_reachable_stations_in_time(self, start_point, start_time, time_limit):
-        return self.dijkstra(start_point, start_time, None, time_limit)
+    def get_reachable_stations_in_time(self, start_point: str, start_time: int, time_limit: int):
+        return self.dijkstra(start_point, start_time, "", time_limit)
 
-    def get_fastest_route(self, start_point, start_time, end_point):
+    def get_fastest_route(self, start_point: str, start_time: int, end_point: str):
         # end of search is 4 days
         return self.dijkstra(start_point, start_time, end_point, 4 * 24 * 60)
 
-    def dijkstra(self, start_point, start_time, end_point, time_limit):
+    def dijkstra(self, start_point: str, start_time: int, end_point: str, time_limit: int):
         end_time = start_time + time_limit
         # (arrival time, from node)
         reachable_stations = {start_point: (start_time, start_point)}
@@ -86,7 +85,7 @@ class Network:
                 # python does not offer an update priority implementation
             visited.add(visiting)
             for stop_id, timetable in self.stops[visiting].items():
-                timetable.sort() # sort by departure
+                timetable.sort()  # sort by departure
                 idx = 0
                 # TODO use binary search?
                 while idx < len(timetable) and timetable[idx][0] < cur_time:
