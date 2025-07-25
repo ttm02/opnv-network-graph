@@ -7,36 +7,7 @@ import shelve
 from heapq import heappush, heappop
 
 from typing_extensions import TypeAlias
-
-# helper functions for converting times
-midnight = 24 * 60
-
-
-def minutes_to_time(minutes: int) -> str:
-    """
-    Converts minutes since midnight to HH:MM format.
-
-    Args:
-        minutes (int): Minutes since midnight.
-
-    Returns:
-        str: Formatted time string (e.g., "08:30").
-    """
-    return f"{minutes // 60:02}:{minutes % 60:02}"
-
-
-def time_to_minutes(time_str: str) -> int:
-    """
-    Converts a HH:MM time string to minutes since midnight.
-
-    Args:
-        time_str (str): Time string in format "HH:MM".
-
-    Returns:
-        int: Minutes since midnight.
-    """
-    h, m = map(int, time_str.split(':'))
-    return h * 60 + m
+from utils import midnight
 
 
 # a dataclass to define the information of a single connection

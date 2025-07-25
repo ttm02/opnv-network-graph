@@ -1,42 +1,14 @@
 import argparse
 import json
 import difflib
+from typing import Optional
 
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import pandas as pd
 from network import Network
+from utils import time_to_minutes, minutes_to_time,find_closest_station_id_by_name
 import smopy
-
-
-def find_closest_station_id_by_name(target_name, df):
-    # Check if 'Name' column exists
-    if 'Name' not in df.columns:
-        raise ValueError("The DataFrame must have a 'Name' column.")
-
-    # Try exact match first
-    exact_match = df[df["Name"] == target_name]
-    if not exact_match.empty:
-        return exact_match.index[0]  # Return the index of the exact match
-
-    # Find closest match
-    closest_match = difflib.get_close_matches(target_name, df["Name"], n=1, cutoff=0.5)
-
-    if closest_match:
-        return df[df["Name"] == closest_match[0]].index[0]  # Return the index of the closest match
-
-    return None  # No close match found
-
-
-# Convert HH:MM to minutes since midnight
-def time_to_minutes(time_str):
-    h, m = map(int, time_str.split(':'))
-    return h * 60 + m
-
-
-# Convert minutes back to HH:MM
-def minutes_to_time(minutes):
-    return f"{minutes // 60:02}:{minutes % 60:02}"
 
 
 def parse_arguments():
@@ -54,11 +26,7 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    network = Network()
-    # print("Read Network data (Timetables)")
-    # with open(args.network_file, 'r') as f:
-    #    network.set_stops(json.load(f))
-    network.set_stops(args.network_file)
+    network = Network(args.network_file)
     print("Read Station Positions")
     stops_data = pd.read_csv(args.stations_file, index_col="DHID")
     stops_data.dropna(inplace=True)
