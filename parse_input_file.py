@@ -3,18 +3,11 @@
 from lxml import etree
 
 from datetime import datetime
-from network import Network
+from network import Network, time_to_minutes
 
 xml_namespace = "{http://www.netex.org.uk/netex}"
 
 date_format = "%Y-%m-%dT00:00:00"
-
-
-# Convert HH:MM to minutes since midnight
-def time_to_minutes(time_str):
-    h, m, s = map(int, time_str.split(':'))
-    # we dont care about the seconds, as not all data provider use them
-    return h * 60 + m
 
 
 # returns a network object

@@ -15,6 +15,7 @@ import pickle
 import json
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+#TODO argparse for these settings
 file_to_read = "data/20250721_fahrplaene_gesamtdeutschland.zip"
 use_parallel_processing = True
 # 4 batches per worker, as the files have different sizes (mostly depending on frequency of the respective service)
@@ -58,8 +59,6 @@ with zipfile.ZipFile(file_to_read, 'r') as zip_file:
                 except Exception as e:
                     print(f"Error processing Files: {e}")
                     exit(1)
-
-# results = list(tqdm(executor.map(lambda xml_file: get_line_info_from_file(zip_file.open(xml_file)), xml_files), total=len(xml_files)))
 
 print("Read Station Positions")
 stops_data = pd.read_csv("data/20250721_zHV_gesamt/zHV_aktuell_csv.2025-07-21.csv",
