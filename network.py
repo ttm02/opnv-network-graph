@@ -133,21 +133,20 @@ class Network:
                 # python does not offer an update priority implementation
             visited.add(visiting)
             for stop_id, timetable in self.stops[visiting].items():
-                print(timetable)
                 timetable.sort()  # sort by departure
                 idx = 0
                 while idx < len(timetable) and timetable[idx].departure < cur_time:
                     idx += 1
                 # found the next departure, check if it is still in bounds
-                if idx < len(timetable) and timetable[idx][0] < end_time:
-                    earliest_arrival = timetable[idx][1]
-                    cur_dep_time = timetable[idx][0]
+                if idx < len(timetable) and timetable[idx].departure < end_time:
+                    earliest_arrival = timetable[idx].arrival
+                    cur_dep_time = timetable[idx].departure
                     # day wrap around (e.g. a night train)
                     if earliest_arrival < cur_dep_time:
                         earliest_arrival = earliest_arrival + midnight  # +1 Day
                     idx += 1
                     while cur_dep_time < earliest_arrival and idx < len(timetable):
-                        assert timetable[idx][0] >= cur_dep_time
+                        assert timetable[idx].departure >= cur_dep_time
                         # is there a later connection that runs faster (unlikely but possible)
                         cur_dep_time = timetable[idx].departure
                         arrival2 = timetable[idx].arrival
