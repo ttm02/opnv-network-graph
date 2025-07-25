@@ -20,19 +20,18 @@ use_parallel_processing = True
 # 4 batches per worker, as the files have different sizes (mostly depending on frequency of the respective service)
 batches_per_worker = 4
 
-date_to_use =datetime.strptime("2025-10-22", "%Y-%m-%d").date() # a Wednesday outside of Holidays
-
+date_to_use = datetime.strptime("2025-10-22", "%Y-%m-%d").date()  # a Wednesday outside of Holidays
 
 
 def process_xml_batch(xml_files):
-    local_network = Network()
+    local_network = Network(None)
     with zipfile.ZipFile(file_to_read, 'r') as zip_file:
         for xml_file in xml_files:
-            local_network.merge(get_line_info_from_file(zip_file.open(xml_file),date_to_use))
+            local_network.merge(get_line_info_from_file(zip_file.open(xml_file), date_to_use))
     return local_network
 
 
-network = Network()
+network = Network(None)
 print("Read Timetable Data ...")
 with zipfile.ZipFile(file_to_read, 'r') as zip_file:
     xml_files = [f for f in zip_file.namelist() if f.endswith(".xml")]

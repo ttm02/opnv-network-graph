@@ -19,7 +19,7 @@ def time_to_minutes(time_str):
 
 # returns a network object
 def consolidate_data(line_data, stop_points, stops, journeys, trips):
-    network = Network()
+    network = Network(None)
 
     for trip_id, (pattern, trip) in trips.items():
         assert pattern in journeys
@@ -119,7 +119,7 @@ def get_line_info_from_file(file_to_read, date_to_use):
     stop_assignment = get_single_children(service_frame, "stopAssignments", allow_none=True)
     if stop_assignment is None:
         # could not read data
-        return Network()
+        return Network(None)
 
     for stop in stop_assignment:
         scheduled_stop_point = get_single_children(stop, "ScheduledStopPointRef").get("ref")
