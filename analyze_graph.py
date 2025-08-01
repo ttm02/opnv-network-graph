@@ -4,6 +4,7 @@ import matplotlib
 import matplotlib.colors as mcolors
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from scipy.spatial import cKDTree
 
 from network import Network
 from utils import *
@@ -44,6 +45,7 @@ def main():
     get_early_departure_plot(network, in_area, map_box)
     get_num_departures_plot(network, in_area, map_box)
     get_num_connections_plot(network, in_area, map_box)
+    get_population_plot(network, in_area, map_box)
     get_reacable_in_plot(network, in_area, map_box, "Darmstadt Schloss")
 
     get_num_vehicles_plot(network, in_area, map_box)
@@ -188,10 +190,40 @@ def get_reacable_in_plot(network, in_area, map_box, start_station_name):
 
     in_area.loc[start, "reachable_in"] = 1  # cannot visualize 0
     get_plot_colorbar(in_area.dropna(inplace=False),  # remove stations unreachable in time
-                      # dont picture stations reachable too late
                       "reachable_in", map_box, kind="points",
                       title=f"Reachable form {in_area.loc[start, 'Name']} (starting {minutes_to_time(start_time)})",
                       legend_title="Reachable in minutes", outname="reachable_in")
+
+
+def get_population_plot(network, in_area, map_box):
+    print("Read Population data")
+    # data from: https://data.humdata.org/dataset/germany-high-resolution-population-density-maps-demographic-estimates
+    df = pd.read_csv("data/population_deu_2019-07-01.csv")
+    # only the relevant part
+    in_area_population = df[(map_box[0] <= df["Lat"]) & (df["Lat"] <= map_box[2]) &
+                            (map_box[1] <= df["Lon"]) & (df["Lon"] <= map_box[3])].copy()
+
+    station_coords = in_area[["Latitude", "Longitude"]].to_numpy()
+
+    # Build KD-tree for station locations
+    tree = cKDTree(station_coords)
+
+    # Query nearest station for each population point
+    population_coords = in_area_population[["Lat", "Lon"]].to_numpy()
+    distances, indices = tree.query(population_coords, k=1)
+
+    in_area_population["nearest_station_id"] = in_area.index[indices]  # save nearest station
+    population_per_station = in_area_population.groupby("nearest_station_id")["Population"].sum()
+
+    in_area["Population"] = in_area.apply(
+        # row.name is the station id
+        # 1 as minimum, as 0 cannot be visualized in plot
+        lambda row: population_per_station[row.name] if row.name in population_per_station else 1, axis=1)
+
+    get_plot_colorbar(in_area,
+                      "Population", map_box, kind="points",
+                      title=f"Est. number of people living closest to a station",
+                      outname="population")
 
 
 def draw_map(map_box, title):
