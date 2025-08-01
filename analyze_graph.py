@@ -1,14 +1,16 @@
-import argparse
-import json
-import difflib
-from typing import Optional
-
 from matplotlib import pyplot as plt
-from tqdm import tqdm
-import pandas as pd
+import matplotlib.cm as cm
+import matplotlib
+import matplotlib.colors as mcolors
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 from network import Network
-from utils import time_to_minutes, minutes_to_time,find_closest_station_id_by_name
-import smopy
+from utils import *
+import pandas as pd
+
+import warnings
+
+import argparse
 
 
 def parse_arguments():
@@ -36,55 +38,104 @@ def main():
     time_limit = args.time_limit
     start_time = time_to_minutes(args.start_time)
 
-    print("Compute stations reachable in %i min from %s ..." % (time_limit, stops_data.loc[start_station, "Name"]))
+    map_box = (49.8388, 8.560719, 49.931479, 8.750582)  # area around Darmstadt
+    # select stops in that area
+    in_area = stops_data[(stops_data["Latitude"] > map_box[0]) &
+                         (stops_data["Latitude"] < map_box[2]) &
+                         (stops_data["Longitude"] > map_box[1]) &
+                         (stops_data["Longitude"] < map_box[3])].copy()
 
-    reachable = network.get_reachable_stations_in_time(start_station, start_time, time_limit)
-    print("%i Stations are reachable" % len(reachable))
-    print("Draw map")
+    get_departures_plot(network, in_area, map_box)
 
-    min_lat = 180
-    min_long = 180
-    max_lat = -180
-    max_long = -180
+def get_departures_plot(network, in_area, map_box):
+    # get the data
+    def get_depatures(stop_id):
+        result = []
+        for stop_id, timetable in network.stops[stop_id].items():
+            timetable.sort()
+            for connection in timetable:
+                result.append(connection.departure)
+        return result
 
-    coordinates = []
-    for station in reachable:
-        lat = stops_data.loc[station]["Latitude"]
-        lon = stops_data.loc[station]["Longitude"]
-        coordinates.append((lat, lon))
+    def count_daytime_departures(stop_id):
+        departures = get_depatures(stop_id)
+        return sum(9 <= (t // 60) < 18 for t in departures)  # counts hours 9–17
 
-        min_lat = min(min_lat, lat)
-        min_long = min(min_long, lon)
-        max_lat = max(max_lat, lat)
-        max_long = max(max_long, lon)
+    # collect number of departures
+    in_area["daytime_departures"] = in_area.index.map(count_daytime_departures)
+    # in_area["daytime_departures"] = in_area["daytime_departures"] / 8 # per hour
+    # remove stations only used at night (or not at all)
+    in_area_with_depatures = in_area[
+        in_area["daytime_departures"] > 0].copy()
 
-    # area to plot
-    map_box = (min_lat, min_long, max_lat, max_long)
-    # print(map_box)
-    map = smopy.Map(map_box)
+    cmap, norm = add_color_col(in_area_with_depatures, "daytime_departures")
+    get_point_plot(in_area_with_depatures, "color", map_box, norm, cmap,
+                   "Number of Departures from 9 to 17:00", "departures")
 
-    # figsize is used for resolution
-    ax = map.show_mpl(figsize=(24, 24))
 
-    # TODO annotation is not working correctly
+def add_color_col(df, values_col, colormap="plasma", color_col="color"):
+    norm = mcolors.LogNorm(
+        vmin=df[values_col].min(),
+        vmax=df[values_col].max()
+    )
+    cmap = matplotlib.colormaps[colormap]  # or "plasma", "virdis", etc.
+    colors = cmap(norm(df[values_col].to_numpy()))
+    # colors is now a 2D array, as ech color has a distinct values for rgba, need to combine them for the pandas dataframe, alternatively, we could use mcolors.to_hex
+    df[color_col] = [tuple(c) for c in colors]
+    return cmap, norm
+
+
+def draw_map(map_box, title):
+    map = get_map(map_box)
+
+    ax = map.show_mpl(figsize=(12, 12))
+
     ax.annotate(
-        "Reachable from %s (%s) until %s (%i stops)" % (
-            stops_data.loc[start_station, "Name"],
-            minutes_to_time(start_time),
-            minutes_to_time(start_time + time_limit),
-            len(reachable)),
+        title,
         xy=(0.5, 1.02),  # Position relative to axes (centered above the map)
         xycoords="axes fraction",
         fontsize=24,
         ha="center",  # Center horizontally
         va="bottom",  # Position below the top edge
     )
+    return map, ax
 
-    for lat, lon in coordinates:
+
+def draw_data_points(map, ax, df, color_col):
+    # plot data points
+    for _, row in df.iterrows():
+        lat, lon = row["Latitude"], row["Longitude"]
         x, y = map.to_pixels(lat, lon)
-        ax.plot(x, y, 'or', ms=10, mew=2)
 
-    plt.savefig(args.output)
+        color = row[color_col]
+        ax.plot(x, y, 'o', color=color, ms=10, mew=0.5, alpha=.5)
+
+
+def add_colorbar(ax, norm, cmap):
+    cax = inset_axes(ax,
+                     width="5%",  # width of colorbar relative to parent axes
+                     height="50%",  # height of colorbar relative to parent axes
+                     loc='upper right',
+                     borderpad=2)
+    sm = cm.ScalarMappable(norm=norm, cmap=cmap)
+    plt.colorbar(sm, cax=cax)
+
+
+def save_plot(filename):
+    # write to file
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=UserWarning)
+        # ignore the warning about tight layout as the result looks satisfactory
+        # inset_axes will plate the colorbar inside the map, so no real problem with a tight_layout
+        plt.tight_layout()
+    plt.savefig(f"{filename}.png")
+
+
+def get_point_plot(df, color_col, map_box, norm, cmap, title, outname):
+    map, ax = draw_map(map_box, title)
+    draw_data_points(map, ax, df, color_col)
+    add_colorbar(ax, norm, cmap)
+    save_plot(outname)
 
 
 if __name__ == '__main__':
