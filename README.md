@@ -13,3 +13,4 @@ https://www.opendata-oepnv.de/ht/de/organisation/delfi/startseite?tx_vrrkit_view
 
 * Visualize where vehicles tend to spend the most time waiting.
 * Simulate small delays and see how they propagate—where do delays cause systemic problems? (tight transfers?)
+* Get some data on vehicles on streets per day and compare to buses per day
